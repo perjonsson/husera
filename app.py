@@ -20,7 +20,6 @@ from  sqlalchemy.sql.expression import func
 from flask.ext.heroku import Heroku
 from uuid import uuid4
 from urlparse import urlparse, urljoin
-from random import *
 from hashlib import sha1 
 
 app = Flask(__name__)
@@ -41,16 +40,28 @@ db = SQLAlchemy(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html', sodermalm=sales_prices("sodermalm"))
+    min_sold_date = app.config['HUSERA_MIN_SOLD_DATE']
+    max_sold_date = app.config['HUSERA_MAX_SOLD_DATE']
+    max_living_area = app.config['HUSERA_MIN_LIVING_AREA']
+    min_living_area = app.config['HUSERA_MAX_LIVING_AREA']
+    sodermalm=sales_prices("södermalm", min_sold_date, max_sold_date, min_living_area, max_living_area)
+
+    return render_template('index.html', 
+        sodermalm=sodermalm,
+        min_living_area=min_living_area,
+        max_living_area=max_living_area,
+        min_sold_date=min_sold_date,
+        max_sold_date=max_sold_date
+        )
 
 
-def sales_prices(area):
+def sales_prices(area, min_sold_date, max_sold_date, min_living_area, max_living_area):
     callerId = "husera"
     timestamp = str(int(time.time()))
     unique = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(16))
     hashstr = sha1(callerId+timestamp+"HBkjpeFRPFHBZxqqfnoegTJIzX4wr0P94pAowH6V"+unique).hexdigest()
      
-    url = "/listings?q=%s&callerId="+callerId+"&time="+timestamp+"&unique="+unique+"&hash="+hashstr % (area)
+    url = "/sold?q=%s&callerId=%s&time=%s&unique=%s&hash=%s" % (area, callerId, timestamp, unique, hashstr)
      
     connection = httplib.HTTPConnection("api.booli.se")
     connection.request("GET", url)
