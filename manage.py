@@ -2,7 +2,7 @@
 # manage.py
 from flask.ext.script import Manager, prompt_bool
 from flask.ext.migrate import Migrate, MigrateCommand
-from app import app, db, Role, date, datetime, timedelta, User
+from app import app, db
 
 migrate = Migrate(app, db)
 
