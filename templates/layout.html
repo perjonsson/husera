@@ -57,8 +57,10 @@
       ================================================== -->
       <!-- Placed at the end of the document so the pages load faster -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
       <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
       <script src="{{ url_for('static', filename='js/docs.min.js') }}"></script>
+      {% block js %}{% endblock %}
       <script>
       $(document).ready(function() {
         $( "input#website" ).wrap( $( '<div class="input-group">') );

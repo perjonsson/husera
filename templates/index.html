@@ -3,13 +3,93 @@
   
 
       <div class="page-header">
-        <h1>Vart ska jag husera?</h1>
+        <h1>Accepterat pris</h1>
+        <em>Visar data från {{ sales_prices["totalCount"] }} lägenheter.</em>
       </div>
-      
-      <h2>Södermalm</h2>
-      <p class="lead">X lägenheter på {{ min_living_area }}-{{ max_living_area}}m&square; sålda mellan {{ min_sold_date }} och {{ max_sold_date }} till ett snittpris på <strong></strong></p>
-      {{ sodermalm }}
+      <br/>
+      <canvas id="myChart" width="1200" height="400"></canvas>
+      <br/><br/>
+      <div class="row">
+	      <div class="col-lg-8">
+		      <h4>Sålda lägenheter på Södermalm</h4>
+			      {% for item in sales_prices["sold"] %}
+			      	<h3><a href="{{ item["url"] }}">{{ item["location"]["address"]["streetAddress"] }}</a> <small>{{ item["rooms"] }} rok ({{ item["livingArea"] }} kvm) såldes {{ item["soldDate"] }} för {{ item["soldPrice"] }} kr</small></a></h3>
+			      {% endfor %}
+	      </div>
+	      <div class="col-lg-4">
+		      <h4>Antal sålda per datum</h4>
+		      	{% set i = 0 %}
+		      	{% set current_date = sales_prices["sold"][0]["soldDate"] %}
+
+		      	<h3>{{ sales_prices["sold"][0]["soldDate"]|date|month_and_year }}</h3>
+
+		      	{% for item in sales_prices["sold"] %}
+
+		      		
+		     		<!-- if same date, iterate -->
+		      		{% if item["soldDate"]|date|same_date(current_date|date) %}
+		      			{% set i = i + 1 %}
+		      		{% else %}
+		      			<h4>{{ current_date|date }} ({{ current_date|date|weekday }}) <small>{{ i }}</small></h4>
+		      			{% if not item["soldDate"]|date|same_month_and_year(current_date|date) %}
+		      				<h3>{{ item["soldDate"]|date|month_and_year }}</h3>
+		      			{% endif %}
+		      			{% set i = 0 %}
+		      			{% set current_date = item["soldDate"] %}
+		      		{% endif %}
+		      	{% endfor %}
+	      </div>
+      </div>
 
 
 
+{% endblock %}
+{% block js %}
+      <script>
+      $(document).ready(function() {
+        // Get context with jQuery - using jQuery's .get() method.
+        var ctx = $("#myChart").get(0).getContext("2d");
+        var data = {
+		    labels: ["January", "February", "March", "April", "May", "June", "July"],
+		    datasets: [
+		        {
+		            label: "Antal sålda lägenheter",
+		            fillColor: "rgba(220,220,220,0.2)",
+		            strokeColor: "rgba(220,220,220,1)",
+		            pointColor: "rgba(220,220,220,1)",
+		            pointStrokeColor: "#fff",
+		            pointHighlightFill: "#fff",
+		            pointHighlightStroke: "rgba(220,220,220,1)",
+		            data: [
+		            {% set number_of_sold = 0 %}
+			      	{% set current_date = sales_prices["sold"][0]["soldDate"] %}
+			      	{% for item in sales_prices["sold"] %}
+			      		{% if item["soldDate"] == current_date %}
+			      			{% set number_of_sold = number_of_sold + 1 %}
+			      		{% else %}
+			      			{{ number_of_sold }},
+			      			{% set number_of_sold = 0 %}
+			      			{% set current_date = item["soldDate"] %}
+			      		{% endif %}
+			      	{% endfor %}
+			      	]
+		        },
+		        {
+		            label: "My Second dataset",
+		            fillColor: "rgba(151,187,205,0.2)",
+		            strokeColor: "rgba(151,187,205,1)",
+		            pointColor: "rgba(151,187,205,1)",
+		            pointStrokeColor: "#fff",
+		            pointHighlightFill: "#fff",
+		            pointHighlightStroke: "rgba(151,187,205,1)",
+		            data: [28, 48, 40, 19, 86, 27, 90]
+		        }
+		    ]
+		};
+
+        // This will get the first returned node in the jQuery collection.
+        var myLineChart = new Chart(ctx).Line(data);
+
+      });
+      </script>
 {% endblock %}
